@@ -5,6 +5,7 @@ import cors from "cors";
 // Routes
 import authRoutes from './routes/auth.js';
 import gmailRoutes from './routes/gmail.js';
+import errorMiddleware from "./middlewares/errorsMiddleware.js"
 
 const app = express();
 
@@ -31,6 +32,8 @@ app.use(cookieParser())
 
 app.use('/auth', authRoutes);
 app.use('/gmail', gmailRoutes);
+//Middleware to handle errors
+app.use(errorMiddleware);
 
 // // Home route
 // app.get('/', (req, res) => {

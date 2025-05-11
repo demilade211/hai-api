@@ -1,15 +1,19 @@
 import express from 'express';
 
-import  { google } from 'googleapis';
+import { google } from 'googleapis';
 
 import UserModel from '../models/user.js'; // Adjust the path to your User model
+import jwt from 'jsonwebtoken';
+import sendToken from "../utils/jwt.js";
 
 const router = express.Router();
 
+let apiUrl = process.env.NODE_ENV === 'PRODUCTION' ? 'https://hai-api.onrender.com' : 'http://localhost:8000';
+let feUrl = process.env.NODE_ENV === 'PRODUCTION' ? 'https://haimail.vercel.app' : 'http://localhost:3000';
 const oauth2Client = new google.auth.OAuth2(
   process.env.GOOGLE_CLIENT_ID,
   process.env.GOOGLE_CLIENT_SECRET,
-  'https://hai-api.onrender.com/auth/google/callback'
+  `${apiUrl}/auth/google/callback`
 );
 
 // const oauth2Client = new google.auth.OAuth2(
@@ -81,7 +85,7 @@ router.get('/google/callback', async (req, res) => {
     }
 
     user.email = email; // Update email in case it was not set before
-    
+
     // Save tokens in user.google
     user.google = {
       access_token: tokens.access_token,
@@ -93,13 +97,30 @@ router.get('/google/callback', async (req, res) => {
 
     await user.save();
 
+    const payload = { userid: user._id }
+    const authToken = await jwt.sign(payload, process.env.SECRETE, { expiresIn: '7d' })
+
+    sendToken(user, 200, res, authToken)
+
     // Optionally store userId in session or JWT for future requests
     // req.session.userId = user._id;
 
-    res.redirect('https://haimail.vercel.app/home');
+    res.redirect(`${feUrl}/home`);
   } catch (error) {
     console.error('Error during OAuth callback', error);
-    res.redirect('https://haimail.vercel.app/auth/login');
+    res.redirect(`${feUrl}/auth/login`);
+  }
+});
+
+
+router.get('/me', async (req, res, next) => {
+  try {
+    res.status(200).json({
+      success: true,
+      user: req.user
+    })
+  } catch (error) {
+    return next(error)
   }
 });
 
