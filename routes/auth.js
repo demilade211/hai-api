@@ -1,5 +1,7 @@
-const express = require('express');
-const { google } = require('googleapis');
+import express from 'express';
+
+import  { google } from 'googleapis';
+
 import User from '../models/user'; // Adjust the path as necessary
 
 const router = express.Router();
