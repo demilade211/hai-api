@@ -25,10 +25,10 @@ app.use(cookieParser())
 app.use('/auth', authRoutes);
 app.use('/gmail', gmailRoutes);
 
-// Home route
-app.get('/', (req, res) => {
-  res.render('index', { user: req.session.user });
-});
+// // Home route
+// app.get('/', (req, res) => {
+//   res.render('index', { user: req.session.user });
+// });
 
  
 export default app;
