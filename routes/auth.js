@@ -2,7 +2,7 @@ import express from 'express';
 
 import  { google } from 'googleapis';
 
-import User from '../models/user'; // Adjust the path as necessary
+import UserModel from '../models/User.js'; // Adjust the path to your User model
 
 const router = express.Router();
 
@@ -74,10 +74,10 @@ router.get('/google/callback', async (req, res) => {
     const email = profile.data.emailAddress;
 
     // Find or create user in DB
-    let user = await User.findOne({ email });
+    let user = await UserModel.findOne({ email });
 
     if (!user) {
-      user = new User({ email });
+      user = new UserModel({ email });
     }
 
     user.email = email; // Update email in case it was not set before
@@ -91,7 +91,7 @@ router.get('/google/callback', async (req, res) => {
       expiry_date: tokens.expiry_date,
     };
 
-    await user.save();
+    await UserModel.save();
 
     // Optionally store userId in session or JWT for future requests
     // req.session.userId = user._id;
