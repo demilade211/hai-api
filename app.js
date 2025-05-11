@@ -1,6 +1,4 @@
-require('dotenv').config({ path: "config/config.env" });
-import  express from "express";
-const session = require('express-session');
+import  express from "express"; 
 import path from "path" 
 import cookieParser from "cookie-parser" 
 import cors from "cors";
