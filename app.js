@@ -16,11 +16,7 @@ const app = express();
 app.use(cors()); 
 app.use(express.json());
 app.use(express.urlencoded({extended: false}));//to handle url encoded data
-app.use(cookieParser())
-
-// Set view engine
-app.set('view engine', 'ejs');
-app.set('views', path.join(__dirname, 'views'));
+app.use(cookieParser()) 
 
 // Static files
 app.use(express.static(path.join(__dirname, 'public')));

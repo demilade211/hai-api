@@ -1,4 +1,4 @@
-const { google } = require('googleapis');
+import { google }from 'googleapis';
 
 function getGmailClient(tokens) {
     const oauth2Client = new google.auth.OAuth2();
