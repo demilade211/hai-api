@@ -91,15 +91,15 @@ router.get('/google/callback', async (req, res) => {
       expiry_date: tokens.expiry_date,
     };
 
-    await UserModel.save();
+    await user.save();
 
     // Optionally store userId in session or JWT for future requests
     // req.session.userId = user._id;
 
-    res.redirect('/');
+    res.redirect('https://haimail.vercel.app/home');
   } catch (error) {
     console.error('Error during OAuth callback', error);
-    res.redirect('/');
+    res.redirect('https://haimail.vercel.app/auth/login');
   }
 });
 
