@@ -1,0 +1,27 @@
+{
+  "name": "haimail-backend",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "nodemon --exec babel-node server.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "@babel/cli": "^7.27.2",
+    "@babel/core": "^7.27.1",
+    "@babel/node": "^7.27.1",
+    "@babel/preset-env": "^7.27.2",
+    "dotenv": "^16.5.0",
+    "ejs": "^3.1.10",
+    "express": "^5.1.0",
+    "express-session": "^1.18.1",
+    "googleapis": "^148.0.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.10"
+  }
+}
