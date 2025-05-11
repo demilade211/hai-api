@@ -2,8 +2,9 @@ import express from 'express';
 
 const router = express.Router();
 import  { listUnreadEmails } from '../services/gmail';
+import { authenticateUser } from '../middlewares/authMiddleware.js';
 
-router.get('/unread', async (req, res) => {
+router.get('/unread',authenticateUser, async (req, res) => {
     const tokens = req.user.google;
 
     if (!tokens) {
@@ -19,7 +20,7 @@ router.get('/unread', async (req, res) => {
     }
 });
 
-router.get('/summary', async (req, res) => {
+router.get('/summary',authenticateUser, async (req, res) => {
     const tokens = req.user.google;
 
     if (!tokens) {
@@ -50,7 +51,7 @@ router.get('/summary', async (req, res) => {
     }
 });
 
-router.get('/email/:id', async (req, res) => {
+router.get('/email/:id',authenticateUser, async (req, res) => {
     const tokens = req.user.google;
     const { id } = req.params;
 
@@ -73,7 +74,7 @@ router.get('/email/:id', async (req, res) => {
     }
 });
 
-router.post('/email/:id/reply', async (req, res) => {
+router.post('/email/:id/reply',authenticateUser, async (req, res) => {
     const tokens = req.user.google;
     const { id } = req.params;
     const { message } = req.body;
@@ -129,7 +130,7 @@ router.post('/email/:id/reply', async (req, res) => {
     }
 });
 
-router.post('/draft', async (req, res) => {
+router.post('/draft',authenticateUser, async (req, res) => {
     const tokens = req.user.google;
     const { to, subject, message } = req.body;
 
@@ -169,7 +170,7 @@ router.post('/draft', async (req, res) => {
     }
 });
 
-router.post('/send', async (req, res) => {
+router.post('/send',authenticateUser, async (req, res) => {
     const tokens = req.user.google;
     const { to, subject, message } = req.body;
 
