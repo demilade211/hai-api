@@ -2,7 +2,7 @@ import express from 'express';
 
 import  { google } from 'googleapis';
 
-import UserModel from '../models/User.js'; // Adjust the path to your User model
+import UserModel from '../models/user.js'; // Adjust the path to your User model
 
 const router = express.Router();
 
