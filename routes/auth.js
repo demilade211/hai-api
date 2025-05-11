@@ -5,6 +5,7 @@ import { google } from 'googleapis';
 import UserModel from '../models/user.js'; // Adjust the path to your User model
 import jwt from 'jsonwebtoken';
 import sendToken from "../utils/jwt.js";
+import { authenticateUser } from '../middlewares/authMiddleware.js';
 
 const router = express.Router();
 
@@ -113,7 +114,7 @@ router.get('/google/callback', async (req, res) => {
 });
 
 
-router.get('/me', async (req, res, next) => {
+router.get('/me',authenticateUser, async (req, res, next) => {
   try {
     res.status(200).json({
       success: true,
