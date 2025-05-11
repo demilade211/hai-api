@@ -15,7 +15,14 @@ const app = express();
 //   saveUninitialized: true,
 // }));
 
-app.use(cors()); 
+// ✅ Set allowed origin (adjust to your frontend origin)
+const allowedOrigin = "http://localhost:3000"; // or your frontend URL
+
+app.use(cors({
+  origin: allowedOrigin,
+  credentials: true // ✅ allow sending cookies
+}));
+
 app.use(express.json());
 app.use(express.urlencoded({extended: false}));//to handle url encoded data
 app.use(cookieParser()) 
