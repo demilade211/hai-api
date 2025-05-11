@@ -9,7 +9,7 @@ const router = express.Router();
 const oauth2Client = new google.auth.OAuth2(
   process.env.GOOGLE_CLIENT_ID,
   process.env.GOOGLE_CLIENT_SECRET,
-  'https://hai-api.onrender.com/google/callback'
+  'https://hai-api.onrender.com/auth/google/callback'
 );
 
 // const oauth2Client = new google.auth.OAuth2(
