@@ -1,7 +1,10 @@
 require('dotenv').config({ path: "config/config.env" });
-const express = require('express');
+import  express from "express";
 const session = require('express-session');
-const path = require('path');
+import path from "path" 
+import cookieParser from "cookie-parser" 
+import cors from "cors";
+
 
 const app = express();
 
@@ -11,6 +14,11 @@ app.use(session({
   resave: false,
   saveUninitialized: true,
 }));
+
+app.use(cors()); 
+app.use(express.json());
+app.use(express.urlencoded({extended: false}));//to handle url encoded data
+app.use(cookieParser())
 
 // Set view engine
 app.set('view engine', 'ejs');
