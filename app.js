@@ -2,7 +2,9 @@ import  express from "express";
 import path from "path" 
 import cookieParser from "cookie-parser" 
 import cors from "cors";
-
+// Routes
+import authRoutes from './routes/auth';
+import gmailRoutes from './routes/gmail';
 
 const app = express();
 
@@ -17,13 +19,9 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({extended: false}));//to handle url encoded data
 app.use(cookieParser()) 
+ 
 
-// Static files
-app.use(express.static(path.join(__dirname, 'public')));
 
-// Routes
-const authRoutes = require('./routes/auth');
-const gmailRoutes = require('./routes/gmail');
 app.use('/auth', authRoutes);
 app.use('/gmail', gmailRoutes);
 
