@@ -1,6 +1,6 @@
 import dotenv from "dotenv"
 
-dotenv.config({ path: "../config/config.env" }); 
+dotenv.config({ path: "config/config.env" }); 
 // Create and send token and save in the cookie.
 const sendToken = (user, statusCode, res, token) => {
 
