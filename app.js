@@ -3,8 +3,8 @@ import path from "path"
 import cookieParser from "cookie-parser" 
 import cors from "cors";
 // Routes
-import authRoutes from './routes/auth';
-import gmailRoutes from './routes/gmail';
+import authRoutes from './routes/auth.js';
+import gmailRoutes from './routes/gmail.js';
 
 const app = express();
 

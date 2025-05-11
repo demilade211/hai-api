@@ -1,7 +1,7 @@
 import express from 'express';
 
 const router = express.Router();
-import  { listUnreadEmails } from '../services/gmail.js';
+import  { listUnreadEmails } from '../services/gmail';
 
 router.get('/unread', async (req, res) => {
     const tokens = req.session.tokens;
