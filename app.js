@@ -16,7 +16,7 @@ const app = express();
 // }));
 
 // ✅ Set allowed origin (adjust to your frontend origin)
-const allowedOrigin = "http://localhost:3000"; // or your frontend URL
+const allowedOrigin = process.env.NODE_ENV === "DEVELOPMENT"?"http://localhost:3000":"https://haimail.vercel.app"; // or your frontend URL
 
 app.use(cors({
   origin: allowedOrigin,
