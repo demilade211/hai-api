@@ -9,11 +9,11 @@ import cors from "cors";
 const app = express();
 
 // Session configuration
-app.use(session({
-  secret: process.env.SESSION_SECRET,
-  resave: false,
-  saveUninitialized: true,
-}));
+// app.use(session({
+//   secret: process.env.SESSION_SECRET,
+//   resave: false,
+//   saveUninitialized: true,
+// }));
 
 app.use(cors()); 
 app.use(express.json());

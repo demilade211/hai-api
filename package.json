@@ -8,8 +8,7 @@
   },
   "keywords": [],
   "author": "",
-  "license": "ISC",
-  "type": "commonjs",
+  "license": "ISC", 
   "dependencies": {
     "@babel/cli": "^7.27.2",
     "@babel/core": "^7.27.1",
