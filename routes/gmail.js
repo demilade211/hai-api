@@ -4,7 +4,7 @@ const router = express.Router();
 import  { listUnreadEmails } from '../services/gmail';
 
 router.get('/unread', async (req, res) => {
-    const tokens = req.session.tokens;
+    const tokens = req.user.google;
 
     if (!tokens) {
         return res.status(401).json({ error: 'User not authenticated' });
@@ -20,7 +20,7 @@ router.get('/unread', async (req, res) => {
 });
 
 router.get('/summary', async (req, res) => {
-    const tokens = req.session.tokens;
+    const tokens = req.user.google;
 
     if (!tokens) {
         return res.status(401).json({ error: 'User not authenticated' });
@@ -51,7 +51,7 @@ router.get('/summary', async (req, res) => {
 });
 
 router.get('/email/:id', async (req, res) => {
-    const tokens = req.session.tokens;
+    const tokens = req.user.google;
     const { id } = req.params;
 
     if (!tokens) {
@@ -74,7 +74,7 @@ router.get('/email/:id', async (req, res) => {
 });
 
 router.post('/email/:id/reply', async (req, res) => {
-    const tokens = req.session.tokens;
+    const tokens = req.user.google;
     const { id } = req.params;
     const { message } = req.body;
 
@@ -130,7 +130,7 @@ router.post('/email/:id/reply', async (req, res) => {
 });
 
 router.post('/draft', async (req, res) => {
-    const tokens = req.session.tokens;
+    const tokens = req.user.google;
     const { to, subject, message } = req.body;
 
     if (!tokens) {
@@ -170,7 +170,7 @@ router.post('/draft', async (req, res) => {
 });
 
 router.post('/send', async (req, res) => {
-    const tokens = req.session.tokens;
+    const tokens = req.user.google;
     const { to, subject, message } = req.body;
 
     if (!tokens) {
