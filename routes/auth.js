@@ -84,6 +84,8 @@ router.get('/google/callback', async (req, res) => {
     if (user) {
       const payload = { userid: user._id };
       const authToken = await jwt.sign(payload, process.env.SECRETE, { expiresIn: '7d' });
+      console.log("User already exists", user);
+      
 
       sendToken(user, 200, res, authToken);
       return res.redirect(`${feUrl}/home`);

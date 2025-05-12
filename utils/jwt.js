@@ -19,7 +19,8 @@ const sendToken = (user, statusCode, res, token) => {
         options.secure = true; // Set to true for production important for cookies to work over HTTPS (e.g., on Vercel)
     }
 
-
+    console.log("saving token in cookie",token);
+    
     res.cookie('token', token, options);
 
 }
