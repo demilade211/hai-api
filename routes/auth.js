@@ -81,40 +81,30 @@ router.get('/google/callback', async (req, res) => {
     // Find or create user in DB
     let user = await UserModel.findOne({ email });
 
-    if (user) {
-      const payload = { userid: user._id };
-      const authToken = await jwt.sign(payload, process.env.SECRETE, { expiresIn: '7d' });
-      console.log("User already exists", user);
-      
-
-      sendToken(user, 200, res, authToken);
-      return res.redirect(`${feUrl}/home`);
-
+    if (!user) {
+      user = new UserModel({ email });
     }
-    user = new UserModel({ email });
 
-    user.email = email;
+    user.email = email; // Update email in case it was not set before
 
-    // Only update refresh token if it exists
-    const updatedGoogleTokens = {
+    // Save tokens in user.google
+    user.google = {
       access_token: tokens.access_token,
+      refresh_token: tokens.refresh_token || user.google.refresh_token,
       scope: tokens.scope,
       token_type: tokens.token_type,
       expiry_date: tokens.expiry_date,
     };
 
-    if (tokens.refresh_token) {
-      updatedGoogleTokens.refresh_token = tokens.refresh_token;
-    }
-
-    user.google = updatedGoogleTokens;
-
     await user.save();
 
-    const payload = { userid: user._id };
-    const authToken = await jwt.sign(payload, process.env.SECRETE, { expiresIn: '7d' });
+    const payload = { userid: user._id }
+    const authToken = await jwt.sign(payload, process.env.SECRETE, { expiresIn: '7d' })
 
-    sendToken(user, 200, res, authToken);
+    sendToken(user, 200, res, authToken)
+
+    // Optionally store userId in session or JWT for future requests
+    // req.session.userId = user._id;
 
     res.redirect(`${feUrl}/home`);
   } catch (error) {
@@ -124,8 +114,7 @@ router.get('/google/callback', async (req, res) => {
 });
 
 
-
-router.get('/me', authenticateUser, async (req, res, next) => {
+router.get('/me',authenticateUser, async (req, res, next) => {
   try {
     res.status(200).json({
       success: true,
