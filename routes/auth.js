@@ -81,9 +81,15 @@ router.get('/google/callback', async (req, res) => {
     // Find or create user in DB
     let user = await UserModel.findOne({ email });
 
-    if (!user) {
-      user = new UserModel({ email });
+    if (user) {
+      const payload = { userid: user._id };
+      const authToken = await jwt.sign(payload, process.env.SECRETE, { expiresIn: '7d' });
+
+      sendToken(user, 200, res, authToken);
+      return res.redirect(`${feUrl}/home`);
+
     }
+    user = new UserModel({ email });
 
     user.email = email;
 
