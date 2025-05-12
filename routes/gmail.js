@@ -6,7 +6,7 @@ import { authenticateUser } from '../middlewares/authMiddleware.js';
 
 router.get('/unread',authenticateUser, async (req, res) => {
     const tokens = req.user.google;
-    console.log(req.user);
+    console.log(req.user,"hii");
     
 
     if (!tokens) {

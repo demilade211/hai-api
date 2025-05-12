@@ -9,7 +9,7 @@ const sendToken = (user, statusCode, res, token) => {
     // Options for cookie
     const options = {
         expires: new Date(
-            Date.now() + process.env.COOKIE_EXPIRY_TIME * 24 * 60 * 60 * 1000
+            Date.now() + 2 * 24 * 60 * 60 * 1000
         ),
         httpOnly: true, 
         sameSite: 'None', // for cross-origin cookies (if backend & frontend are on different domains)
