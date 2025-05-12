@@ -12,6 +12,8 @@ export const authenticateUser = async(req,res,next)=>{
             console.log("middleware");
             
             req.user = await UserModel.findById(verified.userid);
+            console.log(req.user,"hii");
+            
             next(); 
     } catch (error) {
         next(error)
