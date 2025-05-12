@@ -6,6 +6,8 @@ import { authenticateUser } from '../middlewares/authMiddleware.js';
 
 router.get('/unread',authenticateUser, async (req, res) => {
     const tokens = req.user.google;
+    console.log(req.user);
+    
 
     if (!tokens) {
         return res.status(401).json({ error: 'User not authenticated' });
