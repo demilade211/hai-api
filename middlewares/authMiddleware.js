@@ -8,11 +8,9 @@ export const authenticateUser = async(req,res,next)=>{
             if(!token){
                 return next(new ErrorHandler("Login first to access this resource",401))
             }
-            const verified=jwt.verify(token,process.env.SECRETE);
-            console.log("middleware");
+            const verified=jwt.verify(token,process.env.SECRETE); 
             
-            req.user = await UserModel.findById(verified.userid);
-            console.log(req.user,"hii");
+            req.user = await UserModel.findById(verified.userid); 
             
             next(); 
     } catch (error) {
