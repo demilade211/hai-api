@@ -1,6 +1,6 @@
-import  express from "express"; 
-import path from "path" 
-import cookieParser from "cookie-parser" 
+import express from "express";
+import path from "path"
+import cookieParser from "cookie-parser"
 import cors from "cors";
 // Routes
 import authRoutes from './routes/auth.js';
@@ -17,7 +17,7 @@ const app = express();
 // }));
 
 // ✅ Set allowed origin (adjust to your frontend origin)
-const allowedOrigin = process.env.NODE_ENV === "DEVELOPMENT"?"http://localhost:3000":"https://haimail.vercel.app"; // or your frontend URL
+const allowedOrigin = process.env.NODE_ENV === "DEVELOPMENT" ? "http://localhost:3000" : "https://haimail.vercel.app"; // or your frontend URL
 let API_URL = process.env.NODE_ENV === 'PRODUCTION' ? 'https://hai-api.onrender.com' : 'http://localhost:8000';
 app.use(cors({
   origin: allowedOrigin,
@@ -25,9 +25,9 @@ app.use(cors({
 }));
 
 app.use(express.json());
-app.use(express.urlencoded({extended: false}));//to handle url encoded data
-app.use(cookieParser()) 
- 
+app.use(express.urlencoded({ extended: false }));//to handle url encoded data
+app.use(cookieParser())
+
 // Vapi tool proxy
 app.post('/vapi/tool/gmail', async (req, res) => {
   try {
@@ -51,9 +51,10 @@ app.post('/vapi/tool/gmail', async (req, res) => {
     // });
 
     // const data = await response.json();
-    cosole.log("Vapi proxy called with body:", req.body);
-    res.status(response.status).json({msg: "Vapi proxy called successfully", data: req.body});
-    
+    console.log("🚀 Vapi proxy called! Payload:", JSON.stringify(req.body, null, 2));
+    // Simple echo response to confirm
+    return res.json({ success: true, received: req.body });
+
   } catch (err) {
     console.error("Vapi proxy error:", err);
     res.status(500).json({ error: "Vapi proxy failed" });
@@ -70,5 +71,5 @@ app.use(errorMiddleware);
 //   res.render('index', { user: req.session.user });
 // });
 
- 
+
 export default app;
