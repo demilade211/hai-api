@@ -18,7 +18,7 @@ const app = express();
 
 // ✅ Set allowed origin (adjust to your frontend origin)
 const allowedOrigin = process.env.NODE_ENV === "DEVELOPMENT"?"http://localhost:3000":"https://haimail.vercel.app"; // or your frontend URL
-
+let API_URL = process.env.NODE_ENV === 'PRODUCTION' ? 'https://hai-api.onrender.com' : 'http://localhost:8000';
 app.use(cors({
   origin: allowedOrigin,
   credentials: true // ✅ allow sending cookies
@@ -28,7 +28,37 @@ app.use(express.json());
 app.use(express.urlencoded({extended: false}));//to handle url encoded data
 app.use(cookieParser()) 
  
+// Vapi tool proxy
+app.post('/vapi/tool/gmail', async (req, res) => {
+  try {
+    // const token = req.cookies.token;
+    // if (!token) return res.status(401).json({ error: "Not authenticated" });
 
+    // // Optionally, verify token
+    // jwt.verify(token, process.env.SECRETE);
+
+    // // Forward the body to the Gmail API endpoint you need,
+    // // e.g., GET unread messages
+    // const endpoint = `${API_URL}/gmail/unread` 
+
+    // const response = await fetch(endpoint, {
+    //   method: 'GET',
+    //   headers: {
+    //     'Content-Type': 'application/json',
+    //     // Include cookie for authentication
+    //     Cookie: `token=${token}`,
+    //   },
+    // });
+
+    // const data = await response.json();
+    cosole.log("Vapi proxy called with body:", req.body);
+    res.status(response.status).json({msg: "Vapi proxy called successfully", data: req.body});
+    
+  } catch (err) {
+    console.error("Vapi proxy error:", err);
+    res.status(500).json({ error: "Vapi proxy failed" });
+  }
+});
 
 app.use('/auth', authRoutes);
 app.use('/gmail', gmailRoutes);
