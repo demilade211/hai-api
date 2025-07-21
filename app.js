@@ -66,14 +66,17 @@ app.post('/vapi/tool/gmail', async (req, res) => {
 
     // const data = await response.json();
     console.log("🚀 Vapi proxy called! Payload:", toolCallId);
-    console.log("response", response);
+    
+
+    const data = await response.json();
+    console.log("response", data);
 
     // Format as expected by Vapi
     const resultPayload = {
       results: [
         {
           toolCallId,
-          result: response.data.messages.join(', ')
+          result: data.messages.join(', ')
         }
       ]
     };
