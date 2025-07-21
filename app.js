@@ -37,7 +37,7 @@ app.post('/vapi/tool/gmail', async (req, res) => {
     if (!token) return res.status(401).json({ error: "Token missing in variableValues" });
 
     // Optionally verify the token (recommended for security)
-    jwt.verify(token, process.env.SECRETE);
+    //jwt.verify(token, process.env.SECRETE);
 
     // Forward the body to the Gmail API endpoint you need,
     // e.g., GET unread messages
