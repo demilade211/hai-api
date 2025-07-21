@@ -69,7 +69,9 @@ app.post('/vapi/tool/gmail', async (req, res) => {
 
 
     const data = await response.json();
-    console.log("response", data.messages.join(', '));
+    console.log("response", data.messages.map(email =>
+      `From: ${email.from}, Subject: ${email.subject}, Date: ${email.date}, ID: ${email.id}, Thread ID: ${email.threadId}`
+    ).join(', '));
 
     // Format as expected by Vapi
     const resultPayload = {
