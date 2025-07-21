@@ -12,12 +12,13 @@ const sendToken = (user, statusCode, res, token) => {
             Date.now() + 2 * 24 * 60 * 60 * 1000
         ),
         httpOnly: true, 
-        sameSite: 'None', // for cross-origin cookies (if backend & frontend are on different domains)
+        sameSite: process.env.NODE_ENV === 'PRODUCTION' ? 'none' : 'lax', // for cross-origin cookies (if backend & frontend are on different domains)
+        secure: process.env.NODE_ENV === 'PRODUCTION',
     }
 
-    if(process.env.NODE_ENV === 'PRODUCTION'){
-        options.secure = true; // Set to true for production important for cookies to work over HTTPS (e.g., on Vercel)
-    }
+    // if(process.env.NODE_ENV === 'PRODUCTION'){
+    //     options.secure = true; // Set to true for production important for cookies to work over HTTPS (e.g., on Vercel)
+    // }
 
     //console.log("saving token in cookie",token);
     
