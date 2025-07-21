@@ -31,29 +31,53 @@ app.use(cookieParser())
 // Vapi tool proxy
 app.post('/vapi/tool/gmail', async (req, res) => {
   try {
-    // const token = req.cookies.token;
-    // if (!token) return res.status(401).json({ error: "Not authenticated" });
+    // Extract token from assistant.variableValues
+    const token = req.body?.message?.assistant?.variableValues?.token;
 
-    // // Optionally, verify token
-    // jwt.verify(token, process.env.SECRETE);
+    if (!token) return res.status(401).json({ error: "Token missing in variableValues" });
 
-    // // Forward the body to the Gmail API endpoint you need,
-    // // e.g., GET unread messages
-    // const endpoint = `${API_URL}/gmail/unread` 
+    // Optionally verify the token (recommended for security)
+    jwt.verify(token, process.env.SECRETE);
 
-    // const response = await fetch(endpoint, {
-    //   method: 'GET',
-    //   headers: {
-    //     'Content-Type': 'application/json',
-    //     // Include cookie for authentication
-    //     Cookie: `token=${token}`,
-    //   },
-    // });
+    // Forward the body to the Gmail API endpoint you need,
+    // e.g., GET unread messages
+    const endpoint = `${API_URL}/gmail/unread`
+
+    const response = await fetch(endpoint, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        // Include cookie for authentication
+        Cookie: `token=${token}`,
+      },
+    });
+
+    let toolCallId 
+
+    req.body?.message?.toolCallList.forEach((toolCall) => {
+      if (toolCall.function.name === "listUnreadEmails") {
+        toolCallId = toolCall.id;
+
+      }
+    });
+    if (!toolCallId) {
+      return res.status(400).json({ error: "Missing toolCallId" });
+    }
 
     // const data = await response.json();
-    console.log("🚀 Vapi proxy called! Payload:", JSON.stringify(req.body, null, 2));
-    // Simple echo response to confirm
-    return res.json({ success: true, received: req.body });
+    console.log("🚀 Vapi proxy called! Payload:", toolCallId);
+
+    // Format as expected by Vapi
+    const resultPayload = {
+      results: [
+        {
+          toolCallId,
+          result: response.data.messages.join(', ')
+        }
+      ]
+    };
+
+    return res.json(resultPayload);
 
   } catch (err) {
     console.error("Vapi proxy error:", err);
