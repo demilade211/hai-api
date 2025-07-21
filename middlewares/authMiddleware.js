@@ -11,6 +11,7 @@ export const authenticateUser = async(req,res,next)=>{
             const verified=jwt.verify(token,process.env.SECRETE); 
             
             req.user = await UserModel.findById(verified.userid); 
+            req.token = token; // Store the token in the request object for later use
             
             next(); 
     } catch (error) {

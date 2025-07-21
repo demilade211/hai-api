@@ -118,7 +118,8 @@ router.get('/me',authenticateUser, async (req, res, next) => {
   try {
     res.status(200).json({
       success: true,
-      user: req.user
+      user: req.user,
+      token: req.token // Include token in response if needed
     })
   } catch (error) {
     return next(error)
