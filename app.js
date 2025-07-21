@@ -52,7 +52,7 @@ app.post('/vapi/tool/gmail', async (req, res) => {
       },
     });
 
-    let toolCallId 
+    let toolCallId
 
     req.body?.message?.toolCallList.forEach((toolCall) => {
       if (toolCall.function.name === "listUnreadEmails") {
@@ -66,7 +66,7 @@ app.post('/vapi/tool/gmail', async (req, res) => {
 
     // const data = await response.json();
     console.log("🚀 Vapi proxy called! Payload:", toolCallId);
-    
+
 
     const data = await response.json();
     console.log("response", data.messages.join(', '));
@@ -76,7 +76,9 @@ app.post('/vapi/tool/gmail', async (req, res) => {
       results: [
         {
           toolCallId,
-          result: data.messages.join(', ')
+          result: data.messages.map(email =>
+            `From: ${email.from}, Subject: ${email.subject}, Date: ${email.date}, ID: ${email.id}, Thread ID: ${email.threadId}`
+          ).join(', ')
         }
       ]
     };
