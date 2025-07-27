@@ -106,7 +106,7 @@ router.get('/google/callback', async (req, res) => {
     // Optionally store userId in session or JWT for future requests
     // req.session.userId = user._id;
 
-    res.redirect(`${feUrl}/home`);
+    res.redirect(`${feUrl}/dashboard/home`);
   } catch (error) {
     console.error('Error during OAuth callback', error);
     res.redirect(`${feUrl}/auth/login`);
