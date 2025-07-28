@@ -6,6 +6,16 @@ import cors from "cors";
 import authRoutes from './routes/auth.js';
 import gmailRoutes from './routes/gmail.js';
 import errorMiddleware from "./middlewares/errorsMiddleware.js"
+import moment from 'moment';
+
+moment.updateLocale('en', {
+  calendar: {
+    sameDay: '[Today] LT',
+    lastDay: '[Yesterday] LT',
+    lastWeek: '[Last] dddd LT',
+    sameElse: 'MM/DD/YYYY LT'
+  }
+});
 
 const app = express();
 
@@ -73,13 +83,15 @@ app.post('/vapi/tool/gmail', async (req, res) => {
       `From: ${email.from}, Subject: ${email.subject}, Date: ${email.date}, ID: ${email.id}, Thread ID: ${email.threadId}`
     ).join(', '));
 
+    const formattedDate = moment(email.date).calendar();
+
     // Format as expected by Vapi
     const resultPayload = {
       results: [
         {
           toolCallId,
           result: data.messages.map(email =>
-            `From: ${email.from}, Subject: ${email.subject}, Date: ${email.date}, ID: ${email.id}, Thread ID: ${email.threadId}`
+            `From: ${email.from}, Subject: ${email.subject},Preview: ${email.preview}, Date: ${formattedDate}, ID: ${email.id}, Thread ID: ${email.threadId}`
           ).join(', ')
         }
       ]

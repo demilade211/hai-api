@@ -29,13 +29,15 @@ async function listUnreadEmails(tokens) {
         const subject = headers.find(h => h.name === 'Subject')?.value || '';
         const from = headers.find(h => h.name === 'From')?.value || '';
         const date = headers.find(h => h.name === 'Date')?.value || '';
+        const snippet = msg.data.snippet || '';
 
         detailedMessages.push({
             id: message.id,
             threadId: message.threadId,
             subject,
             from,
-            date,
+            date, 
+            preview: snippet,
         });
     }
 
