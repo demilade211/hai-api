@@ -83,7 +83,7 @@ app.post('/vapi/tool/gmail', async (req, res) => {
       `From: ${email.from}, Subject: ${email.subject}, Date: ${email.date}, ID: ${email.id}, Thread ID: ${email.threadId}`
     ).join(', '));
 
-    const formattedDate = moment(email.date).calendar();
+    //const formattedDate = ;
 
     // Format as expected by Vapi
     const resultPayload = {
@@ -91,7 +91,7 @@ app.post('/vapi/tool/gmail', async (req, res) => {
         {
           toolCallId,
           result: data.messages.map(email =>
-            `From: ${email.from}, Subject: ${email.subject},Preview: ${email.preview}, Date: ${formattedDate}, ID: ${email.id}, Thread ID: ${email.threadId}`
+            `From: ${email.from}, Subject: ${email.subject},Preview: ${email.preview}, Date: ${moment(email.date).calendar()}, ID: ${email.id}, Thread ID: ${email.threadId}`
           ).join(', ')
         }
       ]
