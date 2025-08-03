@@ -1,7 +1,7 @@
 import express from 'express';
 
 const router = express.Router();
-import  { listUnreadEmails } from '../services/gmail';
+import  { listUnreadEmails,getGmailClient } from '../services/gmail';
 import { authenticateUser } from '../middlewares/authMiddleware.js';
 
 router.get('/unread',authenticateUser, async (req, res) => {
@@ -209,6 +209,40 @@ router.post('/send',authenticateUser, async (req, res) => {
         res.status(500).json({ error: 'Failed to send email' });
     }
 });
+
+router.get('/drafts', authenticateUser, async (req, res) => {
+    const tokens = req.user.google;
+
+    if (!tokens) {
+        return res.status(401).json({ error: 'User not authenticated' });
+    }
+
+    try {
+        const gmail = getGmailClient(tokens);
+
+        // List all drafts
+        const draftsRes = await gmail.users.drafts.list({ userId: 'me' });
+        const drafts = draftsRes.data.drafts || [];
+
+        // Optionally fetch the full message for each draft
+        const detailedDrafts = await Promise.all(
+            drafts.map(async (draft) => {
+                const draftDetails = await gmail.users.drafts.get({
+                    userId: 'me',
+                    id: draft.id,
+                    format: 'full',
+                });
+                return draftDetails.data;
+            })
+        );
+
+        res.json({ drafts: detailedDrafts });
+    } catch (error) {
+        console.error('Error fetching drafts:', error);
+        res.status(500).json({ error: 'Failed to fetch drafts' });
+    }
+});
+
 
 
 

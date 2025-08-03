@@ -46,4 +46,5 @@ async function listUnreadEmails(tokens) {
 
 module.exports = {
     listUnreadEmails,
+    getGmailClient
 };
