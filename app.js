@@ -35,17 +35,14 @@ app.use(cookieParser())
 // Vapi tool proxy
 app.post('/vapi/tool/gmail', async (req, res) => {
   try {
-    // Extract token from assistant.variableValues
     const token = req.body?.message?.assistant?.variableValues?.token;
     if (!token) return res.status(401).json({ error: "Token missing in variableValues" });
 
-    // Determine tool call
     const toolCallList = req.body?.message?.toolCallList || [];
     if (!toolCallList.length) {
       return res.status(400).json({ error: "No tool calls provided" });
     }
 
-    // We'll build results array (support multiple in case)
     const results = [];
 
     for (const toolCall of toolCallList) {
@@ -53,7 +50,6 @@ app.post('/vapi/tool/gmail', async (req, res) => {
       if (!fn || !fn.name) continue;
 
       if (fn.name === "listUnreadEmails") {
-        // Call unread endpoint
         const endpoint = `${API_URL}/gmail/unread`;
         const response = await fetch(endpoint, {
           method: 'GET',
@@ -74,11 +70,8 @@ app.post('/vapi/tool/gmail', async (req, res) => {
         });
 
       } else if (fn.name === "markOneEmailAsRead") {
-        console.log("Marking one email as read...",fn.name);
-        
-        // Expect argument like { id: "messageId" }
         const args = fn.arguments || {};
-        const messageId = args.id || args.messageId; // tolerate both
+        const messageId = args.id || args.messageId;
         if (!messageId) {
           results.push({
             toolCallId,
@@ -94,7 +87,7 @@ app.post('/vapi/tool/gmail', async (req, res) => {
             'Content-Type': 'application/json',
             Cookie: `token=${token}`,
           },
-          body: JSON.stringify({}), // single-mark route uses param
+          body: JSON.stringify({}),
         });
 
         if (!response.ok) {
@@ -104,17 +97,50 @@ app.post('/vapi/tool/gmail', async (req, res) => {
             result: `Failed to mark email as read: ${errBody}`,
           });
         } else {
-          const respJson = await response.json();
-          console.log("Marked as read response:", respJson);
-          
           results.push({
             toolCallId,
             result: `Marked as read: ${messageId}`,
-            detail: respJson, 
           });
         }
+
+      } else if (fn.name === "markManyEmailsAsRead") {
+        console.log("Marking multiple emails as read",fn.name);
+        
+        const args = fn.arguments || {};
+        const ids = args.ids || args.messageIds || args.message_ids;
+        if (!Array.isArray(ids) || ids.length === 0) {
+          results.push({
+            toolCallId,
+            result: 'Error: provide an array of message IDs in `ids` to mark as read.',
+          });
+          continue;
+        }
+
+        const endpoint = `${API_URL}/gmail/mark-read`;
+        const response = await fetch(endpoint, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Cookie: `token=${token}`,
+          },
+          body: JSON.stringify({ ids }),
+        });
+
+        if (!response.ok) {
+          const errBody = await response.text();
+          results.push({
+            toolCallId,
+            result: `Failed to mark multiple emails as read: ${errBody}`,
+          });
+        } else {
+          console.log("Marked multiple emails as read",ids);
+          results.push({
+            toolCallId,
+            result: `Marked multiple as read: ${ids.join(', ')}`,
+          });
+        }
+
       } else {
-        // Unknown tool - echo back
         results.push({
           toolCallId,
           result: `Unhandled tool call: ${fn.name}`,
@@ -122,7 +148,6 @@ app.post('/vapi/tool/gmail', async (req, res) => {
       }
     }
 
-    // Response formatted for Vapi
     return res.json({ results });
 
   } catch (err) {
