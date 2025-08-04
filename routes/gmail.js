@@ -1,13 +1,15 @@
 import express from 'express';
 
+
+
 const router = express.Router();
-import  { listUnreadEmails,getGmailClient } from '../services/gmail';
+import { listUnreadEmails, getGmailClient, extractBody } from '../services/gmail';
 import { authenticateUser } from '../middlewares/authMiddleware.js';
 
-router.get('/unread',authenticateUser, async (req, res) => {
+router.get('/unread', authenticateUser, async (req, res) => {
     const tokens = req.user.google;
     //console.log(req.user,"hii");
-    
+
 
     if (!tokens) {
         return res.status(401).json({ error: 'User not authenticated' });
@@ -22,7 +24,7 @@ router.get('/unread',authenticateUser, async (req, res) => {
     }
 });
 
-router.get('/summary',authenticateUser, async (req, res) => {
+router.get('/summary', authenticateUser, async (req, res) => {
     const tokens = req.user.google;
 
     if (!tokens) {
@@ -53,7 +55,7 @@ router.get('/summary',authenticateUser, async (req, res) => {
     }
 });
 
-router.get('/email/:id',authenticateUser, async (req, res) => {
+router.get('/email/:id', authenticateUser, async (req, res) => {
     const tokens = req.user.google;
     const { id } = req.params;
 
@@ -69,14 +71,19 @@ router.get('/email/:id',authenticateUser, async (req, res) => {
             format: 'full',
         });
 
-        res.json(email.data);
+        const content = extractBody(email.data.payload);
+        res.json({ htmlOrText: content, full: email.data });
+
+
+
+
     } catch (error) {
         console.error('Error reading email:', error);
         res.status(500).json({ error: 'Failed to read email' });
     }
 });
 
-router.post('/email/:id/reply',authenticateUser, async (req, res) => {
+router.post('/email/:id/reply', authenticateUser, async (req, res) => {
     const tokens = req.user.google;
     const { id } = req.params;
     const { message } = req.body;
@@ -132,7 +139,7 @@ router.post('/email/:id/reply',authenticateUser, async (req, res) => {
     }
 });
 
-router.post('/draft',authenticateUser, async (req, res) => {
+router.post('/draft', authenticateUser, async (req, res) => {
     const tokens = req.user.google;
     const { to, subject, message } = req.body;
 
@@ -172,7 +179,7 @@ router.post('/draft',authenticateUser, async (req, res) => {
     }
 });
 
-router.post('/send',authenticateUser, async (req, res) => {
+router.post('/send', authenticateUser, async (req, res) => {
     const tokens = req.user.google;
     const { to, subject, message } = req.body;
 
@@ -240,6 +247,83 @@ router.get('/drafts', authenticateUser, async (req, res) => {
     } catch (error) {
         console.error('Error fetching drafts:', error);
         res.status(500).json({ error: 'Failed to fetch drafts' });
+    }
+});
+
+// Mark a single message as read
+router.post('/mark-read/:id', authenticateUser, async (req, res) => {
+    const tokens = req.user.google;
+    const { id } = req.params;
+
+    if (!tokens) {
+        return res.status(401).json({ error: 'User not authenticated' });
+    }
+    if (!id) {
+        return res.status(400).json({ error: 'Message id is required' });
+    }
+
+    try {
+        const gmail = getGmailClient(tokens);
+        await gmail.users.messages.modify({
+            userId: 'me',
+            id,
+            requestBody: {
+                removeLabelIds: ['UNREAD'],
+            },
+        });
+
+        res.json({ message: 'Message marked as read', id });
+    } catch (error) {
+        console.error('Error marking message as read:', error);
+        res.status(500).json({ error: 'Failed to mark message as read' });
+    }
+});
+
+// Mark multiple messages as read
+router.post('/mark-read', authenticateUser, async (req, res) => {
+    const tokens = req.user.google;
+    const { ids } = req.body;
+
+    if (!tokens) {
+        return res.status(401).json({ error: 'User not authenticated' });
+    }
+    if (!Array.isArray(ids) || ids.length === 0) {
+        return res.status(400).json({ error: 'Provide an array of message IDs in `ids`' });
+    }
+
+    try {
+        const gmail = getGmailClient(tokens);
+
+        // Preferred: batchModify to remove UNREAD label in one call
+        await gmail.users.messages.batchModify({
+            userId: 'me',
+            requestBody: {
+                ids,
+                removeLabelIds: ['UNREAD'],
+            },
+        });
+
+        res.json({ message: 'Messages marked as read', ids });
+    } catch (error) {
+        console.warn('batchModify failed, falling back to individual modifies:', error);
+
+        // Fallback: mark each individually if batchModify doesn't take effect
+        try {
+            const gmail = getGmailClient(tokens);
+            await Promise.all(
+                ids.map((msgId) =>
+                    gmail.users.messages.modify({
+                        userId: 'me',
+                        id: msgId,
+                        requestBody: { removeLabelIds: ['UNREAD'] },
+                    })
+                )
+            );
+            res.json({ message: 'Messages marked as read (fallback)', ids });
+        } catch (innerErr) {
+            console.error('Error in fallback marking messages as read:', innerErr);
+            res.status(500).json({ error: 'Failed to mark messages as read' });
+        }
     }
 });
 

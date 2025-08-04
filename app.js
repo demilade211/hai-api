@@ -19,23 +19,17 @@ moment.updateLocale('en', {
 
 const app = express();
 
-// Session configuration
-// app.use(session({
-//   secret: process.env.SESSION_SECRET,
-//   resave: false,
-//   saveUninitialized: true,
-// }));
-
 // ✅ Set allowed origin (adjust to your frontend origin)
-const allowedOrigin = process.env.NODE_ENV === "DEVELOPMENT" ? "http://localhost:3000" : "https://haimail.vercel.app"; // or your frontend URL
+const allowedOrigin = process.env.NODE_ENV === "DEVELOPMENT" ? "http://localhost:3000" : "https://haimail.vercel.app";
 let API_URL = process.env.NODE_ENV === 'PRODUCTION' ? 'https://hai-api.onrender.com' : 'http://localhost:8000';
+
 app.use(cors({
   origin: allowedOrigin,
-  credentials: true // ✅ allow sending cookies
+  credentials: true // allow sending cookies
 }));
 
 app.use(express.json());
-app.use(express.urlencoded({ extended: false }));//to handle url encoded data
+app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser())
 
 // Vapi tool proxy
@@ -43,61 +37,89 @@ app.post('/vapi/tool/gmail', async (req, res) => {
   try {
     // Extract token from assistant.variableValues
     const token = req.body?.message?.assistant?.variableValues?.token;
-
     if (!token) return res.status(401).json({ error: "Token missing in variableValues" });
 
-    // Optionally verify the token (recommended for security)
-    //jwt.verify(token, process.env.SECRETE);
-
-    // Forward the body to the Gmail API endpoint you need,
-    // e.g., GET unread messages
-    const endpoint = `${API_URL}/gmail/unread`
-
-    const response = await fetch(endpoint, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        // Include cookie for authentication
-        Cookie: `token=${token}`,
-      },
-    });
-
-    let toolCallId
-
-    req.body?.message?.toolCallList.forEach((toolCall) => {
-      if (toolCall.function.name === "listUnreadEmails") {
-        toolCallId = toolCall.id;
-
-      }
-    });
-    if (!toolCallId) {
-      return res.status(400).json({ error: "Missing toolCallId" });
+    // Determine tool call
+    const toolCallList = req.body?.message?.toolCallList || [];
+    if (!toolCallList.length) {
+      return res.status(400).json({ error: "No tool calls provided" });
     }
 
-    // const data = await response.json();
-    console.log("🚀 Vapi proxy called! Payload:", toolCallId);
+    // We'll build results array (support multiple in case)
+    const results = [];
 
+    for (const toolCall of toolCallList) {
+      const { id: toolCallId, function: fn } = toolCall;
+      if (!fn || !fn.name) continue;
 
-    const data = await response.json();
-    console.log("response", data.messages.map(email =>
-      `From: ${email.from}, Subject: ${email.subject}, Date: ${email.date}, ID: ${email.id}, Thread ID: ${email.threadId}`
-    ).join(', '));
+      if (fn.name === "listUnreadEmails") {
+        // Call unread endpoint
+        const endpoint = `${API_URL}/gmail/unread`;
+        const response = await fetch(endpoint, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            Cookie: `token=${token}`,
+          },
+        });
 
-    //const formattedDate = ;
+        const data = await response.json();
+        const formatted = (data.messages || []).map(email =>
+          `From: ${email.from}, Subject: ${email.subject}, Date: ${moment(email.date).calendar()}, ID: ${email.id}, Thread ID: ${email.threadId}`
+        ).join(' | ') || 'No unread emails found.';
 
-    // Format as expected by Vapi
-    const resultPayload = {
-      results: [
-        {
+        results.push({
           toolCallId,
-          result: data.messages.map(email =>
-            `From: ${email.from}, Subject: ${email.subject},Preview: ${email.preview}, Date: ${moment(email.date).calendar()}, ID: ${email.id}, Thread ID: ${email.threadId}`
-          ).join(', ')
-        }
-      ]
-    };
+          result: formatted,
+        });
 
-    return res.json(resultPayload);
+      } else if (fn.name === "markOneEmailAsRead") {
+        // Expect argument like { id: "messageId" }
+        const args = fn.arguments || {};
+        const messageId = args.id || args.messageId; // tolerate both
+        if (!messageId) {
+          results.push({
+            toolCallId,
+            result: 'Error: no message id provided to mark as read.',
+          });
+          continue;
+        }
+
+        const endpoint = `${API_URL}/gmail/mark-read/${messageId}`;
+        const response = await fetch(endpoint, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Cookie: `token=${token}`,
+          },
+          body: JSON.stringify({}), // single-mark route uses param
+        });
+
+        if (!response.ok) {
+          const errBody = await response.text();
+          results.push({
+            toolCallId,
+            result: `Failed to mark email as read: ${errBody}`,
+          });
+        } else {
+          const respJson = await response.json();
+          results.push({
+            toolCallId,
+            result: `Marked as read: ${messageId}`,
+            detail: respJson, 
+          });
+        }
+      } else {
+        // Unknown tool - echo back
+        results.push({
+          toolCallId,
+          result: `Unhandled tool call: ${fn.name}`,
+        });
+      }
+    }
+
+    // Response formatted for Vapi
+    return res.json({ results });
 
   } catch (err) {
     console.error("Vapi proxy error:", err);
@@ -107,13 +129,7 @@ app.post('/vapi/tool/gmail', async (req, res) => {
 
 app.use('/auth', authRoutes);
 app.use('/gmail', gmailRoutes);
-//Middleware to handle errors
+// Middleware to handle errors
 app.use(errorMiddleware);
-
-// // Home route
-// app.get('/', (req, res) => {
-//   res.render('index', { user: req.session.user });
-// });
-
 
 export default app;
