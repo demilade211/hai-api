@@ -104,8 +104,8 @@ app.post('/vapi/tool/gmail', async (req, res) => {
         }
 
       } else if (fn.name === "markManyEmailsAsRead") {
-        console.log("Marking multiple emails as read",fn.name);
-        
+        console.log("Marking multiple emails as read", fn.name);
+
         const args = fn.arguments || {};
         const ids = args.ids || args.messageIds || args.message_ids;
         if (!Array.isArray(ids) || ids.length === 0) {
@@ -133,11 +133,40 @@ app.post('/vapi/tool/gmail', async (req, res) => {
             result: `Failed to mark multiple emails as read: ${errBody}`,
           });
         } else {
-          console.log("Marked multiple emails as read",ids);
+          console.log("Marked multiple emails as read", ids);
           results.push({
             toolCallId,
             result: `Marked multiple as read: ${ids.join(', ')}`,
           });
+        }
+
+      } else if (fn.name === "sendEmail") {
+        console.log(">>>>",fn.name);
+        
+        const args = fn.arguments || {};
+        const to = args.to;
+        const subject = args.subject || '';
+        const message = args.message || '';
+        if (!to || !message) {
+          results.push({ toolCallId, result: 'Error: `to` and `message` are required to send email.' });
+          continue;
+        }
+
+        const endpoint = `${API_URL}/gmail/send`;
+        const response = await fetch(endpoint, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Cookie: `token=${token}`,
+          },
+          body: JSON.stringify({ to, subject, message }),
+        });
+
+        if (!response.ok) {
+          const errBody = await response.text();
+          results.push({ toolCallId, result: `Failed to send email: ${errBody}` });
+        } else {
+          results.push({ toolCallId, result: `Email sent to ${to}` });
         }
 
       } else {
