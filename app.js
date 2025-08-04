@@ -74,6 +74,8 @@ app.post('/vapi/tool/gmail', async (req, res) => {
         });
 
       } else if (fn.name === "markOneEmailAsRead") {
+        console.log("Marking one email as read...",fn.name);
+        
         // Expect argument like { id: "messageId" }
         const args = fn.arguments || {};
         const messageId = args.id || args.messageId; // tolerate both
@@ -103,6 +105,8 @@ app.post('/vapi/tool/gmail', async (req, res) => {
           });
         } else {
           const respJson = await response.json();
+          console.log("Marked as read response:", respJson);
+          
           results.push({
             toolCallId,
             result: `Marked as read: ${messageId}`,
